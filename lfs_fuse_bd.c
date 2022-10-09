@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <assert.h>
 #if !defined(__FreeBSD__)
-if defined(__APPLE__)
+#if defined(__APPLE__)
 #define BLKSSZGET DKIOCGETBLOCKSIZE
 #define BLKGETSIZE DKIOCGETBLOCKCOUNT
 #include <sys/disk.h>

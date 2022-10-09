@@ -134,12 +134,14 @@ sudo mdconfig -du 0
 
 ## Usage on macOS
 
+**Tested on latest macOS Monterey**
+
 littlefs-fuse requires [osxfuse](https://osxfuse.github.io/) for macOS:
 ```bash
-brew cask install osxfuse
+brew install macfuse
 ```
 
-Once you have cloned littlefs-fuse, you can compile the program with make:
+Once you have cloned littlefs-fuse, change directory to cloned folder. Then you can compile the program with make:
 ``` bash
 make
 ```
@@ -147,14 +149,33 @@ make
 This should have built the `lfs` program in the top-level directory.
 
 From here we will need a block device. If you don't have removable storage
-handy, you can use a file-backed block device with FreeBSD's loop devices:
+handy, you can use a file-backed block device. 
+
+Create a 1 MB image named `test_image`  
 ``` bash
-dd if=/dev/zero of=image bs=1m count=1                                  # create a 1 MB image
-hdiutil attach -imagekey diskimage-class=CRawDiskImage -nomount image   # attach the loop device
-sudo chmod 666 /dev/diskX                                               # make loop device user accessible,
+dd if=/dev/zero of=test_image bs=1M count=1                                 
 ```
 
-littlefs-fuse has two modes of operation, formatting and mounting.
+Attach the loop device to macOS
+``` bash
+hdiutil attach -imagekey diskimage-class=CRawDiskImage -nomount test_image  
+```
+Above command will output something like `/dev/disk4`. Note that `4` can be different in your system.
+
+Then hit this command to make the disk user-accessible. Note: `diskX` -> `X` is number assigned above.
+``` bash
+sudo chmod 666 /dev/diskX
+```
+
+You try to `diskutil list` and the new disk will show up. Note the size is the same as specified on `dd` command.
+```bash 
+...
+/dev/disk4 (disk image):
+   #:                       TYPE NAME                    SIZE       IDENTIFIER
+   0:                                                   +1.0 MB     disk4
+```
+
+Now, let's play around with `lfs` command. `littlefs-fuse` has two modes of operation, formatting and mounting.
 
 To format a block device, pass the `--format` flag. Note! This will erase any
 data on the block device!
@@ -164,20 +185,20 @@ data on the block device!
 
 To mount, run littlefs-fuse with a block device and a mountpoint:
 ``` bash
-mkdir mount
-./lfs /dev/diskX mount
+mkdir lfs_mount
+./lfs /dev/diskX lfs_mount
 ```
 
 Once mounted, the littlefs filesystem will be accessible through the
-mountpoint. You can now use the littlefs like you would any other filesystem:
+mountpoint. You can now use the littlefs like you would any other filesystem. Just example:
 ``` bash
-cd mount
+cd lfs_mount
 echo "hello" > hi.txt
 ls
 cat hi.txt
 ```
 
-After using littlefs, you can unmount and detach the loop device:
+After using littlefs, you can unmount and detach the disk device:
 ``` bash
 cd ..
 hdiutil unmount /dev/diskX
