@@ -12,8 +12,14 @@
 #include <stdint.h>
 #include <assert.h>
 #if !defined(__FreeBSD__)
+if defined(__APPLE__)
+#define BLKSSZGET DKIOCGETBLOCKSIZE
+#define BLKGETSIZE DKIOCGETBLOCKCOUNT
+#include <sys/disk.h>
+#else //defined(__APPLE__)
 #include <sys/ioctl.h>
 #include <linux/fs.h>
+#endif //defined(__APPLE__)
 #elif defined(__FreeBSD__)
 #define BLKSSZGET DIOCGSECTORSIZE
 #define BLKGETSIZE DIOCGMEDIASIZE
